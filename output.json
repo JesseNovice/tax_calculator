@@ -1,13 +1,18 @@
 [
   {
-    "Date": "2025-03-21 20:53:12",
-    "Order ID": "G5RP77",
-    "Type": "buy",
-    "From symbol": "NZD",
-    "To symbol": "NZDD",
-    "From amount": "100000",
-    "To amount": "100000",
-    "utcDate": "2025-03-21T07:53:12.000Z",
-    "utcTimestamp": 1742543592
+    "hash": "G5RP77",
+    "from": "0x0000000000000000000000000000000000000000",
+    "to": "0x4ad50cf71b08c7c8907a8965c84f2c517573573e",
+    "value": "100000000000",
+    "tokenSymbol": "NZDD",
+    "tokenName": "New Zealand Digital Dollar",
+    "tokenDecimal": "6",
+    "timeStamp": "1742542392",
+    "utcDate": "2025-03-21T07:33:12.000Z",
+    "type": "buy",
+    "fromSymbol": "NZD",
+    "toSymbol": "NZDD",
+    "fromAmount": "100000",
+    "toAmount": "100000"
   }
 ]
