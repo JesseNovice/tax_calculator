@@ -1,65 +1,54 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.18;
 
-interface IERC20 {
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
+contract TaxVault {
+    IERC20 public immutable nzdd_token;
 
-    function balanceOf(address account) external view returns (uint256);
+    // Tracks total tax deposited per user
+    mapping(address => uint256) public taxPerUser;
 
-    function allowance(
-        address owner,
-        address spender
-    ) external view returns (uint256);
-
-    function approve(address spender, uint256 amount) external returns (bool);
-}
-
-contract taxWallet {
-    address public i_owner;
-
-    constructor() {
-        i_owner = msg.sender;
+    constructor(IERC20 _token) {
+        nzdd_token = _token;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == i_owner, "Only owner can call this function");
-        _;
-    }
-
-    function depositNZDD(
-        address _tokenAddress,
-        uint256 _amount
-    ) external onlyOwner {
+    // Anyone can deposit tokens into the vault. Their balance is tracked.
+    function deposit(uint256 _amount) external {
         require(_amount > 0, "Amount must be greater than zero");
-
-        IERC20 token = IERC20(_tokenAddress);
         require(
-            token.allowance(msg.sender, address(this)) >= _amount,
+            nzdd_token.allowance(msg.sender, address(this)) >= _amount,
             "Token allowance too low"
         );
 
-        bool success = token.transferFrom(msg.sender, address(this), _amount);
+        bool success = nzdd_token.transferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
         require(success, "Token transfer failed");
+
+        taxPerUser[msg.sender] += _amount;
     }
 
-    function withdrawNZDD(
-        address _tokenAddress,
-        uint256 _tokenAmount
-    ) external onlyOwner {
-        require(_tokenAmount > 0, "Amount must be greater than zero");
+    // Allows individual users to withdraw their own deposits
+    function withdrawMyFunds(uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than zero");
+        require(taxPerUser[msg.sender] >= _amount, "Insufficient user balance");
 
-        IERC20 token = IERC20(_tokenAddress);
-        bool success = token.transfer(msg.sender, _tokenAmount);
+        taxPerUser[msg.sender] -= _amount;
+
+        bool success = nzdd_token.transfer(msg.sender, _amount);
         require(success, "Token withdrawal failed");
+    }
+
+    // View vault's total token balance
+    function getVaultBalance() external view returns (uint256) {
+        return nzdd_token.balanceOf(address(this));
+    }
+
+    // View how much a specific user has deposited
+    function getUserDeposit(address user) external view returns (uint256) {
+        return taxPerUser[user];
     }
 }
